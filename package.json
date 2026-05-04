@@ -1,0 +1,14 @@
+{
+  "name": "go-with-river-and-mountain",
+  "version": "1.0.0",
+  "description": "A terrain-based Go variant with rivers and height-based mountain placement",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
