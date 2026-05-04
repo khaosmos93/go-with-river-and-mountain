@@ -71,26 +71,25 @@ export function countLiberties(board, x, y) {
 /**
  * Check the mountain height placement rule.
  *
- * A stone can be placed on a mountain cell of height h ONLY IF there exists
- * at least one orthogonal neighbor that:
- *   1. Contains a stone of the same color as the player
- *   2. Is on a cell of height h (same level) OR height h-1 (one below)
+ * A stone can be placed on a mountain cell of height h if there exists at
+ * least one orthogonal neighbor containing a friendly stone where:
+ *   - neighbor.height == h      (same level — always ok)
+ *   - neighbor.height == h - 1  (one level below — climb up by 1)
+ *   - neighbor.height  > h      (any higher level — descending freely)
  *
- * Allowed progressions: 0→1, 1→1, 1→2, 2→2, 2→3 …
- * Forbidden jumps:      0→2, 1→3, etc.
+ * Upward jumps of more than one level are the only forbidden case:
+ *   0→2, 1→3, etc. are invalid.
  *
- * @param {object} board
- * @param {number} x
- * @param {number} y
- * @param {string} player  "black" | "white"
- * @returns {boolean}
+ * Examples:
+ *   0→1 ✓  1→1 ✓  1→2 ✓  3→2 ✓  5→0 ✓  0→2 ✗  1→3 ✗
  */
 function hasHeightSupport(board, x, y, player) {
   const h = getCell(board, x, y).height;
 
   for (const nb of neighbors(board, x, y)) {
     const nbCell = getCell(board, nb.x, nb.y);
-    if (nbCell.stone === player && (nbCell.height === h || nbCell.height === h - 1)) {
+    if (nbCell.stone === player &&
+        (nbCell.height === h || nbCell.height === h - 1 || nbCell.height > h)) {
       return true;
     }
   }
@@ -127,7 +126,7 @@ export function canPlace(board, x, y, player, koHash = null) {
     if (!hasHeightSupport(board, x, y, player)) {
       return {
         valid: false,
-        reason: `Need adjacent friendly stone at height ${cell.height} or ${cell.height - 1}`,
+        reason: `Need adjacent friendly stone at height ≥${cell.height} or ${cell.height - 1}`,
       };
     }
   }
