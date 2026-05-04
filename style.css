@@ -313,6 +313,10 @@ canvas {
   background: rgba(255,255,255,0.04);
   border-radius: 6px;
 }
+.height-rule-tip ul {
+  margin: 4px 0 0 12px;
+  padding: 0;
+}
 .height-rule-tip strong { color: #a55cff; }
 .height-rule-tip em { color: var(--text); }
 
