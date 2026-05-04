@@ -14,7 +14,8 @@ export function paintCell(board, x, y, tool, height) {
   } else if (tool === 'river') {
     setCell(board, x, y, { terrain: 'river', height: 0, stone: null });
   } else if (tool === 'mountain') {
-    setCell(board, x, y, { terrain: 'mountain', height: Math.max(1, height), stone: null });
+    // Height is strictly 1–5; clamp any out-of-range input.
+    setCell(board, x, y, { terrain: 'mountain', height: Math.min(5, Math.max(1, height)), stone: null });
   }
 }
 
@@ -56,7 +57,8 @@ export function randomTerrain(board, maxHeight) {
   for (let i = 0; i < numMtnClusters; i++) {
     const cx = Math.floor(Math.random() * size);
     const cy = Math.floor(Math.random() * size);
-    const peakHeight = 1 + Math.floor(Math.random() * maxHeight);
+    // Peak height is always within the fixed 1–5 range regardless of maxHeight.
+    const peakHeight = Math.min(5, Math.max(1, 1 + Math.floor(Math.random() * 5)));
 
     // Paint concentric rings from peak outward with decreasing height
     for (let h = peakHeight; h >= 1; h--) {

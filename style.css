@@ -26,7 +26,8 @@ body {
 }
 
 /* ===== Screens ===== */
-.screen { display: none; min-height: 100vh; flex-direction: column; }
+/* Fixed height — never grows beyond the viewport, so canvas sizing never feeds back into layout */
+.screen { display: none; height: 100vh; overflow: hidden; flex-direction: column; }
 .screen.active { display: flex; }
 
 /* ===== Setup Screen ===== */
@@ -235,6 +236,11 @@ body {
 }
 
 canvas {
+  /* CSS dimensions fill the wrapper; changing the pixel buffer (canvas.width/height)
+     no longer affects flex layout, preventing the board-drift feedback loop. */
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 4px;
   cursor: crosshair;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -296,8 +302,8 @@ canvas {
 }
 .empty-swatch { background: #dcb46a; }
 .river-swatch { background: #2a6fbf; }
-.mtn1-swatch { background: #b0b0b0; }
-.mtn3-swatch { background: #555; }
+.mtn1-swatch { background: #d4d4d4; } /* mountain h=1 */
+.mtn3-swatch { background: #4e4e4e; } /* mountain h=4–5 */
 
 .height-rule-tip {
   font-size: 0.72rem;
