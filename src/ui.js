@@ -7,21 +7,22 @@ import { canPlace } from './rules.js';
 
 // ─── Color Helpers ────────────────────────────────────────────────────────────
 
-/** Compute mountain cell fill color based on height (0..maxHeight). */
-function mountainColor(height, maxHeight) {
-  const t = height / Math.max(maxHeight, 1);
-  const light = Math.round(210 - t * 160); // 210 (light grey) → 50 (dark)
-  return `rgb(${light},${light},${light})`;
+// Fixed grayscale palette for mountain heights 1–5.
+// Heights outside this range are clamped by terrain.js before reaching here.
+const MOUNTAIN_FILL  = ['', '#d4d4d4', '#a8a8a8', '#7a7a7a', '#4e4e4e', '#2a2a2a'];
+const MOUNTAIN_LINES = ['', '#b8b8b8', '#8c8c8c', '#606060', '#383838', '#181818'];
+// Heights 1–2 are light enough to show dark text; 3–5 need white text.
+const MOUNTAIN_LABEL_DARK_MAX = 2;
+
+function mountainColor(height) {
+  return MOUNTAIN_FILL[Math.min(5, Math.max(1, height))];
 }
 
 function riverColor() { return '#2a6fbf'; }
 function emptyColor() { return '#dcb46a'; }
 
-/** Color of mountain grid lines (slightly darker than cell). */
-function mountainLineColor(height, maxHeight) {
-  const t = height / Math.max(maxHeight, 1);
-  const light = Math.round(180 - t * 130);
-  return `rgb(${light},${light},${light})`;
+function mountainLineColor(height) {
+  return MOUNTAIN_LINES[Math.min(5, Math.max(1, height))];
 }
 
 // ─── Layout Calculation ───────────────────────────────────────────────────────
@@ -91,11 +92,11 @@ export function renderBoard(ctx, board, layout, maxHeight, hoverCell, hoverPlaye
           ctx.stroke();
         }
       } else if (cell.terrain === 'mountain') {
-        ctx.fillStyle = mountainColor(cell.height, maxHeight);
+        ctx.fillStyle = mountainColor(cell.height);
         ctx.fillRect(px, py, cellSize, cellSize);
         // Height number label
         if (cellSize >= 24) {
-          ctx.fillStyle = cell.height > maxHeight / 2 ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.35)';
+          ctx.fillStyle = cell.height > MOUNTAIN_LABEL_DARK_MAX ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.35)';
           ctx.font = `bold ${Math.max(9, cellSize * 0.28)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -108,7 +109,7 @@ export function renderBoard(ctx, board, layout, maxHeight, hoverCell, hoverPlaye
 
       // Cell border
       ctx.strokeStyle = cell.terrain === 'mountain'
-        ? mountainLineColor(cell.height, maxHeight)
+        ? mountainLineColor(cell.height)
         : cell.terrain === 'river' ? '#1a5090' : '#9b7a3a';
       ctx.lineWidth = 0.5;
       ctx.strokeRect(px + 0.25, py + 0.25, cellSize - 0.5, cellSize - 0.5);
@@ -226,11 +227,14 @@ function drawStone(ctx, cx, cy, r, color) {
 
 // ─── Canvas Resize ────────────────────────────────────────────────────────────
 
-/** Fit a canvas to its wrapper element. Returns true if size changed. */
+/**
+ * Sync the canvas pixel buffer to its CSS-rendered size.
+ * Because the canvas has `width: 100%; height: 100%` in CSS, offsetWidth/Height
+ * reflects the container's stable layout dimensions — no feedback loop.
+ */
 export function fitCanvas(canvas) {
-  const wrapper = canvas.parentElement;
-  const w = wrapper.clientWidth;
-  const h = wrapper.clientHeight;
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
   if (canvas.width !== w || canvas.height !== h) {
     canvas.width = w;
     canvas.height = h;
