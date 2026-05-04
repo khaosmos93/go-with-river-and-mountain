@@ -5,8 +5,8 @@
  *   - River cells: always blocked
  *   - Empty cells (height 0): standard Go placement (suicide check)
  *   - Mountain cells (height h >= 1): ONLY valid if at least one orthogonal
- *     neighbor contains a stone of the same color at height exactly (h - 1).
- *     Height jumps are forbidden: 0 → 2 is invalid.
+ *     neighbor contains a stone of the same color at height h OR h-1.
+ *     Height jumps are still forbidden: 0 → 2 is invalid.
  *
  * All other rules (capture, liberty, Ko) follow standard Go.
  */
@@ -74,9 +74,10 @@ export function countLiberties(board, x, y) {
  * A stone can be placed on a mountain cell of height h ONLY IF there exists
  * at least one orthogonal neighbor that:
  *   1. Contains a stone of the same color as the player
- *   2. Is on a cell of height exactly (h - 1)
+ *   2. Is on a cell of height h (same level) OR height h-1 (one below)
  *
- * This enforces the step-by-step climb: 0 → 1 → 2 → … No jumping allowed.
+ * Allowed progressions: 0→1, 1→1, 1→2, 2→2, 2→3 …
+ * Forbidden jumps:      0→2, 1→3, etc.
  *
  * @param {object} board
  * @param {number} x
@@ -85,12 +86,11 @@ export function countLiberties(board, x, y) {
  * @returns {boolean}
  */
 function hasHeightSupport(board, x, y, player) {
-  const cell = getCell(board, x, y);
-  const requiredSupportHeight = cell.height - 1;
+  const h = getCell(board, x, y).height;
 
   for (const nb of neighbors(board, x, y)) {
     const nbCell = getCell(board, nb.x, nb.y);
-    if (nbCell.stone === player && nbCell.height === requiredSupportHeight) {
+    if (nbCell.stone === player && (nbCell.height === h || nbCell.height === h - 1)) {
       return true;
     }
   }
@@ -127,7 +127,7 @@ export function canPlace(board, x, y, player, koHash = null) {
     if (!hasHeightSupport(board, x, y, player)) {
       return {
         valid: false,
-        reason: `Need adjacent friendly stone at height ${cell.height - 1}`,
+        reason: `Need adjacent friendly stone at height ${cell.height} or ${cell.height - 1}`,
       };
     }
   }

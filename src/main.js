@@ -68,10 +68,8 @@ function showScreen(name) {
 // ─── Setup Screen ─────────────────────────────────────────────────────────────
 
 (function initSetup() {
-  const sizeGrid  = document.getElementById('size-grid');
-  const maxHSlide = document.getElementById('max-height');
-  const maxHVal   = document.getElementById('max-height-value');
-  const btnStart  = document.getElementById('btn-start-editor');
+  const sizeGrid = document.getElementById('size-grid');
+  const btnStart = document.getElementById('btn-start-editor');
 
   // Build size buttons
   const sizes = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
@@ -88,18 +86,8 @@ function showScreen(name) {
     sizeGrid.appendChild(btn);
   });
 
-  maxHSlide.addEventListener('input', () => {
-    state.maxHeight = parseInt(maxHSlide.value, 10);
-    maxHVal.textContent = maxHSlide.value;
-    // Update brush height slider max
-    const brushH = document.getElementById('brush-height');
-    brushH.max = state.maxHeight;
-    if (parseInt(brushH.value, 10) > state.maxHeight) brushH.value = state.maxHeight;
-  });
-
   btnStart.addEventListener('click', () => {
     state.board = createBoard(state.boardSize);
-    document.getElementById('brush-height').max = state.maxHeight;
     showScreen('editor');
   });
 })();
